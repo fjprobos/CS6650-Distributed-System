@@ -1,0 +1,10 @@
+task,type,limitdurationMiliseconds
+Counter,Multi thread,1000,186
+Collections1,VectorSingleThread,100000,10
+Collections1,ArrayListSingleThread,100000,9
+Collections2,HashTableSingleThread,100000,12
+Collections2,HashMapSingleThread,100000,5
+Collections2,ConcurrentHashMapSingleThread,100000,6
+Collections2,HashTableMultipleThreads,100000,34
+Collections2,HashMapMultipleThreads,100000,24
+Collections2,ConcurrentHashMapMultipleThreads,100000,21
