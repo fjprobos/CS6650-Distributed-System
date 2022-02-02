@@ -19,11 +19,13 @@ public class main {
 	    sb.append("limit");
 	    sb.append("durationMiliseconds");
 	    sb.append('\n');
-		
-		run1(1000);
-		run2(100000);
-		run3a(100000);
-		run3b(100000, 100);
+	    
+	    for (int l=10; l<10000000; l*=10) {
+			run1(l);
+			run2(l);
+			run3a(l);
+			run3b(l, 100);
+	    }
 		
 		writer.write(sb.toString());
 		} 

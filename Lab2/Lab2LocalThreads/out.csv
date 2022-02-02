@@ -1,10 +1,55 @@
 task,type,limitdurationMiliseconds
-Counter,Multi thread,1000,186
-Collections1,VectorSingleThread,100000,10
-Collections1,ArrayListSingleThread,100000,9
-Collections2,HashTableSingleThread,100000,12
-Collections2,HashMapSingleThread,100000,5
-Collections2,ConcurrentHashMapSingleThread,100000,6
-Collections2,HashTableMultipleThreads,100000,34
-Collections2,HashMapMultipleThreads,100000,24
-Collections2,ConcurrentHashMapMultipleThreads,100000,21
+Counter,Multi thread,10,8
+Collections1,VectorSingleThread,10,4
+Collections1,ArrayListSingleThread,10,3
+Collections2,HashTableSingleThread,10,3
+Collections2,HashMapSingleThread,10,3
+Collections2,ConcurrentHashMapSingleThread,10,3
+Collections2,HashTableMultipleThreads,10,21
+Collections2,HashMapMultipleThreads,10,19
+Collections2,ConcurrentHashMapMultipleThreads,10,20
+Counter,Multi thread,100,19
+Collections1,VectorSingleThread,100,0
+Collections1,ArrayListSingleThread,100,0
+Collections2,HashTableSingleThread,100,1
+Collections2,HashMapSingleThread,100,0
+Collections2,ConcurrentHashMapSingleThread,100,0
+Collections2,HashTableMultipleThreads,100,23
+Collections2,HashMapMultipleThreads,100,21
+Collections2,ConcurrentHashMapMultipleThreads,100,22
+Counter,Multi thread,1000,167
+Collections1,VectorSingleThread,1000,0
+Collections1,ArrayListSingleThread,1000,1
+Collections2,HashTableSingleThread,1000,0
+Collections2,HashMapSingleThread,1000,0
+Collections2,ConcurrentHashMapSingleThread,1000,0
+Collections2,HashTableMultipleThreads,1000,18
+Collections2,HashMapMultipleThreads,1000,19
+Collections2,ConcurrentHashMapMultipleThreads,1000,17
+Counter,Multi thread,10000,1515
+Collections1,VectorSingleThread,10000,0
+Collections1,ArrayListSingleThread,10000,1
+Collections2,HashTableSingleThread,10000,1
+Collections2,HashMapSingleThread,10000,0
+Collections2,ConcurrentHashMapSingleThread,10000,0
+Collections2,HashTableMultipleThreads,10000,26
+Collections2,HashMapMultipleThreads,10000,17
+Collections2,ConcurrentHashMapMultipleThreads,10000,16
+Counter,Multi thread,100000,15531
+Collections1,VectorSingleThread,100000,3
+Collections1,ArrayListSingleThread,100000,2
+Collections2,HashTableSingleThread,100000,2
+Collections2,HashMapSingleThread,100000,0
+Collections2,ConcurrentHashMapSingleThread,100000,0
+Collections2,HashTableMultipleThreads,100000,29
+Collections2,HashMapMultipleThreads,100000,18
+Collections2,ConcurrentHashMapMultipleThreads,100000,22
+Counter,Multi thread,1000000,169709
+Collections1,VectorSingleThread,1000000,30
+Collections1,ArrayListSingleThread,1000000,13
+Collections2,HashTableSingleThread,1000000,19
+Collections2,HashMapSingleThread,1000000,1
+Collections2,ConcurrentHashMapSingleThread,1000000,0
+Collections2,HashTableMultipleThreads,1000000,65
+Collections2,HashMapMultipleThreads,1000000,58
+Collections2,ConcurrentHashMapMultipleThreads,1000000,98
