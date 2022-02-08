@@ -1,0 +1,9 @@
+task,type,numberOfRequests,numberOfThreadss,durationMiliseconds
+Get Vertical,Multi thread,1,1,40
+Get Vertical,Single thread,1,1,476
+Get Vertical,Multi thread,10,10,4
+Get Vertical,Single thread,10,1,1833
+Get Vertical,Multi thread,100,100,24
+Get Vertical,Single thread,100,1,14401
+Get Vertical,Multi thread,1000,1000,189
+Get Vertical,Single thread,1000,1,137125
