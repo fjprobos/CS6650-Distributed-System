@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
 public class Main {
@@ -23,9 +24,9 @@ public class Main {
     sb.append("durationMiliseconds");
     sb.append('\n');
     
-    for (int l=1; l<10000; l*=10) {
-		run1m(l);
-		run1s(l);
+    for (int l=32; l<257; l*=2) {
+			run1m(l);
+			run1s(l);
     }
 	
     writer.write(sb.toString());
@@ -39,10 +40,18 @@ public class Main {
 	
 	public static void run1m(int limit) {
 		Timestamp start = new Timestamp(System.currentTimeMillis());
+    CountDownLatch countDownLatch = new CountDownLatch(limit);
 		
 		for (int i=0; i<limit; i++) {
-			Thread thread = new Thread(new SkierClient(1));
+			Thread thread = new Thread(new SkierClient(1, countDownLatch));
 		    thread.start();
+		}
+		
+		// Wait for the thread pool to finish
+		try {
+			countDownLatch.await();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 		
 		Timestamp end = new Timestamp(System.currentTimeMillis());
@@ -70,7 +79,7 @@ public class Main {
 		// This time, we use join inside the loop to wait for the threads to finish
 		
 		for (int i=0; i<1; i++) {
-			Thread thread = new Thread(new SkierClient(limit));
+			Thread thread = new Thread(new SkierClient(limit, null));
 	    thread.start();
 	    try {
 	    	thread.join();
@@ -109,7 +118,7 @@ public class Main {
 		  sb.append("duration");
 		  sb.append('\n');
 		  
-			Thread thread = new Thread(new SkierClient(requestNumber));
+			Thread thread = new Thread(new SkierClient(requestNumber, null));
 	    thread.start();
 		  
 		  writer.write(sb.toString());

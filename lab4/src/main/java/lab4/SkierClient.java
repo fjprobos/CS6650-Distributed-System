@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.*;
@@ -13,17 +14,19 @@ import org.apache.http.HttpStatus;
 
 public class SkierClient implements Runnable {
 	  
-	private static String url = "http://18.206.124.170:8080/lab2_TomcatServlets_war/skiers/12/vertical";
+	private static String url = "http://54.162.88.213:8080/lab2_TomcatServlets_war/skiers/12/vertical";
 	private int requestsNumber;
 	private List<Long> durations;
 	private List<Timestamp> starts;
 	private List<Timestamp> ends;
+	private CountDownLatch countDownLatch;
 	
-	public SkierClient (int requests) {
+	public SkierClient (int requests, CountDownLatch countDownLatch) {
 		this.durations = new ArrayList<Long>();
 		this.starts = new ArrayList<Timestamp>();
 		this.ends = new ArrayList<Timestamp>();
 		this.requestsNumber = requests;
+		this.countDownLatch = countDownLatch;
 	}
 	
 	public List<Long> getDurations() {
@@ -84,7 +87,7 @@ public class SkierClient implements Runnable {
 				
 				// Deal with the response.
 				// Use caution: ensure correct character encoding and is not binary data
-				// System.out.println(new String(responseBody));
+				//System.out.println(new String(responseBody));
 			    
 			  Timestamp end = new Timestamp(System.currentTimeMillis());
 			  this.ends.add(end);
@@ -100,6 +103,10 @@ public class SkierClient implements Runnable {
 	  finally {
 		  // Release the connection.
 		      method.releaseConnection();
+		      if (this.countDownLatch != null) {
+		      	//System.err.println("Counted Down");
+		      	this.countDownLatch.countDown();
+		      }
 			}
   }
 	
