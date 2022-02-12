@@ -3,6 +3,7 @@ package lab4;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -14,19 +15,21 @@ public class Main {
 	
 	public static void main(String[] args) {
 				
-		try (PrintWriter writer = new PrintWriter("multiVsSingle.csv")) {
+		try (PrintWriter writer = new PrintWriter("massiveUpload.csv")) {
 			
 		sb = new StringBuilder();
 		sb.append("task,");
-    sb.append("type,");
-    sb.append("numberOfRequests,");
-    sb.append("numberOfThreadss,");
-    sb.append("durationMiliseconds");
+    sb.append("phase,");
+    sb.append("numberOfRequestsPerThread,");
+    sb.append("threadId,");
+    sb.append("requestId,");
+    sb.append("start,");
+    sb.append("end,");
+    sb.append("duration");
     sb.append('\n');
     
-    for (int l=32; l<257; l*=2) {
-			run1m(l);
-			run1s(l);
+    for (int l=32; l<33; l*=2) {
+			run(l, l, "Post Latency Analysis", "Phase 1");
     }
 	
     writer.write(sb.toString());
@@ -34,75 +37,70 @@ public class Main {
 		catch (FileNotFoundException e) {
 		      System.out.println(e.getMessage());
 		}
-		
-		//runlatencyTest(10000);
 	}
 	
-	public static void run1m(int limit) {
-		Timestamp start = new Timestamp(System.currentTimeMillis());
-    CountDownLatch countDownLatch = new CountDownLatch(limit);
+	public static void run(int threads, int requests, String taskName, String phase) {
 		
-		for (int i=0; i<limit; i++) {
-			Thread thread = new Thread(new SkierClient(1, countDownLatch));
+		Timestamp start = new Timestamp(System.currentTimeMillis());
+		int threadsPerRequest = requests/threads;
+    CountDownLatch countDownLatch = new CountDownLatch(threads);
+    List<SkierClient> clients = new ArrayList<SkierClient>();
+  	List<Long> durations =  new ArrayList<Long>();
+  	List<Timestamp> starts = new ArrayList<Timestamp>();
+  	List<Timestamp> ends = new ArrayList<Timestamp>();
+		
+		for (int i=0; i<threads; i++) {
+			SkierClient client = new SkierClient(threadsPerRequest, countDownLatch);
+			clients.add(client);
+			Thread thread = new Thread(client);
 		    thread.start();
 		}
 		
 		// Wait for the thread pool to finish
 		try {
 			countDownLatch.await();
+			// Fetch the monitoring data collected
+			
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 		
+		// Get the final timestamp and calculate walTime
 		Timestamp end = new Timestamp(System.currentTimeMillis());
-		long diff = end.getTime() - start.getTime();
+		long wallTime = end.getTime() - start.getTime();
 		
-		sb.append("Get Vertical,");
-    sb.append("Multi thread,");
-    sb.append(limit);
-    sb.append(',');
-    sb.append(limit);
-    sb.append(',');
-    sb.append(diff);
-    sb.append('\n');
-		
-		System.out.println("Multithreaded Get Method Vertical ");
-		System.out.println("Number of threads(one request each): " + limit);
-		System.out.println("Duration [ms]: " + diff);
-		System.out.println("\n");
-		
-	}
-	
-	public static void run1s(int limit) {
-		Timestamp start = new Timestamp(System.currentTimeMillis());
-		
-		// This time, we use join inside the loop to wait for the threads to finish
-		
-		for (int i=0; i<1; i++) {
-			Thread thread = new Thread(new SkierClient(limit, null));
-	    thread.start();
-	    try {
-	    	thread.join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+		// Organize info in lists and csv
+		for(SkierClient c : clients) {
+			for(int i=0; i<c.getDurations().size(); i++) {
+				sb.append(taskName);
+		    sb.append(",");
+		    sb.append(phase);
+		    sb.append(',');
+		    sb.append(threadsPerRequest);
+		    sb.append(',');
+		    sb.append(c.toString());
+		    sb.append(',');
+		    sb.append(i);
+		    sb.append(',');
+		    sb.append(c.getStarts().get(i));
+		    sb.append(',');
+		    sb.append(c.getEnds().get(i));
+		    sb.append(',');
+		    sb.append(c.getDurations().get(i));
+		    sb.append('\n');
 			}
+			durations.addAll(c.getDurations());
+			starts.addAll(c.getStarts());
+			ends.addAll(c.getEnds());
 		}
+	
 		
-		Timestamp end = new Timestamp(System.currentTimeMillis());
-		long diff = end.getTime() - start.getTime();
-		
-		sb.append("Get Vertical,");
-    sb.append("Single thread,");
-    sb.append(limit);
-    sb.append(',');
-    sb.append(1);
-    sb.append(',');
-    sb.append(diff);
-    sb.append('\n');
-		
-    System.out.println("Single Thread Get Method Vertical ");
-		System.out.println("Number of requests: " + limit);
-		System.out.println("Duration [ms]: " + diff);
+		System.out.println("Task: " + taskName);
+		System.out.println("Phase): " + phase);
+		System.out.println("Total requests: " + requests);
+		System.out.println("Total threads: " + threads);
+		System.out.println("Wall Time: " + wallTime);
+		calculateStatistics(durations, start, end);
 		System.out.println("\n");
 		
 	}
@@ -129,7 +127,7 @@ public class Main {
 		}
 	}
 	
-	public void calculateStatistics(List<Long> durations, Timestamp start, Timestamp finish) {
+	public static void calculateStatistics(List<Long> durations, Timestamp start, Timestamp finish) {
 		Collections.sort(durations);
 		long min = durations.get(0);
 		long max = durations.get(durations.size() - 1);
@@ -140,7 +138,7 @@ public class Main {
 		long percentile99 = durations.get(percentile99Index);
 		long totalDuration = (finish.getTime() - start.getTime());
 		int totalRequests = durations.size();
-		long throughput = totalRequests/(totalDuration/1000);
+		double throughput = totalRequests/(totalDuration/1000.0);
 		
 		System.out.println("Latency statistics:");
 		System.out.println("Average Duration [ms]: " + averageDuration);

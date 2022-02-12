@@ -14,7 +14,7 @@ import org.apache.http.HttpStatus;
 
 public class SkierClient implements Runnable {
 	  
-	private static String url = "http://54.162.88.213:8080/lab2_TomcatServlets_war/skiers/12/vertical";
+	private static String url = "http://localhost:8080/lab2_TomcatServlets_war_exploded/skiers/12/vertical";
 	private int requestsNumber;
 	private List<Long> durations;
 	private List<Timestamp> starts;
@@ -64,30 +64,41 @@ public class SkierClient implements Runnable {
 		HttpClient client = new HttpClient();
 			
 	  // Create a method instance.
-	  GetMethod method = new GetMethod(url);
-		
-	  // Provide custom retry handler is necessary
-	  method.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, 
-				new DefaultHttpMethodRetryHandler(5, false));
+	  //GetMethod method = new GetMethod(url);
+	  PostMethod method = new PostMethod(url);
+    
 	  try {
+	  	
+	    StringRequestEntity requestEntity = new StringRequestEntity(
+	    		"{'time': 217, 'liftID': 7, 'waitTime': 3}",
+	        "application/json",
+	        "UTF-8");
+
+	    PostMethod postMethod = new PostMethod(url);
+	    postMethod.setRequestEntity(requestEntity);
+	    
+		  // Provide custom retry handler is necessary
+	    postMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, 
+					new DefaultHttpMethodRetryHandler(5, false));
+	  	
 			for (int i = 0; i<this.requestsNumber; i++) {
 				Timestamp start = new Timestamp(System.currentTimeMillis());
 				this.starts.add(start);
 				// Execute the method.
-		    int statusCode = client.executeMethod(method);
+		    int statusCode = client.executeMethod(postMethod);
 				
 			  if (statusCode != HttpStatus.SC_OK) {
 				    System.err.println("Method failed: " + method.getStatusLine());
 				}
 				
 				// Read the response body.
-			  InputStream stream = method.getResponseBodyAsStream();
+			  InputStream stream = postMethod.getResponseBodyAsStream();
 			  byte[] responseBody = stream.readAllBytes();
 				//byte[] responseBody = method.getResponseBodyAsStream();
 				
 				// Deal with the response.
 				// Use caution: ensure correct character encoding and is not binary data
-				//System.out.println(new String(responseBody));
+				System.out.println(new String(responseBody));
 			    
 			  Timestamp end = new Timestamp(System.currentTimeMillis());
 			  this.ends.add(end);

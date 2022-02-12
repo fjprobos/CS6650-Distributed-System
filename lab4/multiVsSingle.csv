@@ -1,9 +1,0 @@
-task,type,numberOfRequests,numberOfThreadss,durationMiliseconds
-Get Vertical,Multi thread,32,32,589
-Get Vertical,Single thread,32,1,3203
-Get Vertical,Multi thread,64,64,228
-Get Vertical,Single thread,64,1,6738
-Get Vertical,Multi thread,128,128,241
-Get Vertical,Single thread,128,1,11511
-Get Vertical,Multi thread,256,256,1260
-Get Vertical,Single thread,256,1,25149
