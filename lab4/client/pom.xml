@@ -4,7 +4,7 @@
   <artifactId>lab4</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>lab4</name>
-   <dependencies>
+     <dependencies>
   	<!-- https://mvnrepository.com/artifact/commons-httpclient/commons-httpclient -->
 	<dependency>
 	    <groupId>commons-httpclient</groupId>

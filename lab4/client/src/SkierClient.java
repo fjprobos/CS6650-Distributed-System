@@ -5,12 +5,12 @@ import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.*;
 import org.apache.commons.httpclient.params.HttpMethodParams;
-import org.apache.http.HttpStatus;
 
 public class SkierClient implements Runnable {
 	  
@@ -20,13 +20,25 @@ public class SkierClient implements Runnable {
 	private List<Timestamp> starts;
 	private List<Timestamp> ends;
 	private CountDownLatch countDownLatch;
+	private int skierRangeMin;
+	private int skierRangeMax;
+	private int lifts;
+	private int startTime;
+	private int periodDuration;
 	
-	public SkierClient (int requests, CountDownLatch countDownLatch) {
+	public SkierClient (int requests, CountDownLatch countDownLatch, int skierRangeMin,
+			int skierRangeMax, int startTime, int endTime, int lifts) {
 		this.durations = new ArrayList<Long>();
 		this.starts = new ArrayList<Timestamp>();
 		this.ends = new ArrayList<Timestamp>();
 		this.requestsNumber = requests;
 		this.countDownLatch = countDownLatch;
+		this.skierRangeMin = skierRangeMin;
+		this.skierRangeMax = skierRangeMax;
+		this.lifts = lifts;
+		this.startTime = startTime;
+		this.periodDuration = endTime - startTime;
+		
 	}
 	
 	public List<Long> getDurations() {
@@ -60,35 +72,40 @@ public class SkierClient implements Runnable {
 	}
 	
 	public void run() {
-		// Create an instance of HttpClient.
+		
+  	// Create an instance of HttpClient.
 		HttpClient client = new HttpClient();
 			
 	  // Create a method instance.
-	  //GetMethod method = new GetMethod(url);
-	  PostMethod method = new PostMethod(url);
-    
+    PostMethod postMethod = new PostMethod(url);
+		
 	  try {
-	  	
-	    StringRequestEntity requestEntity = new StringRequestEntity(
-	    		"{'time': 217, 'liftID': 7, 'waitTime': 3}",
-	        "application/json",
-	        "UTF-8");
-
-	    PostMethod postMethod = new PostMethod(url);
-	    postMethod.setRequestEntity(requestEntity);
-	    
+   
 		  // Provide custom retry handler is necessary
 	    postMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, 
 					new DefaultHttpMethodRetryHandler(5, false));
 	  	
 			for (int i = 0; i<this.requestsNumber; i++) {
+				
+				// Post body creation
+				Random ran = new Random();
+        Integer randomSkierID = ran.nextInt(this.skierRangeMax - this.skierRangeMin) + this.skierRangeMin;
+        Integer randomLiftID = ran.nextInt(this.lifts);
+        StringRequestEntity requestEntity = new StringRequestEntity(
+  	    		"{'time': "+ this.startTime + ran.nextInt(this.periodDuration) 
+  	    		+", 'liftID': "+randomLiftID+", 'waitTime': 3}",
+  	        "application/json",
+  	        "UTF-8");
+        postMethod.setRequestEntity(requestEntity);
+        
+        // Latency recording start
 				Timestamp start = new Timestamp(System.currentTimeMillis());
 				this.starts.add(start);
 				// Execute the method.
 		    int statusCode = client.executeMethod(postMethod);
 				
 			  if (statusCode != HttpStatus.SC_OK) {
-				    System.err.println("Method failed: " + method.getStatusLine());
+				    System.err.println("Method failed: " + postMethod.getStatusLine());
 				}
 				
 				// Read the response body.
@@ -113,7 +130,7 @@ public class SkierClient implements Runnable {
 		} 
 	  finally {
 		  // Release the connection.
-		      method.releaseConnection();
+		      postMethod.releaseConnection();
 		      if (this.countDownLatch != null) {
 		      	//System.err.println("Counted Down");
 		      	this.countDownLatch.countDown();
