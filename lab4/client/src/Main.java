@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class Main {
@@ -43,15 +44,20 @@ public class Main {
 	      c += 1;
 	  }
 	  
-	  Integer launch = numThreads / 4;
+	  Integer launch1 = numThreads / 4;
+	  Integer launch2 = numThreads;
+	  Integer launch3 = numThreads / 10;
     Integer skier_num = numSkiers;
     Integer lifts = numLifts;
     Integer successes = 0;
     Integer no_successes = 0;
     Integer requests = 0;
-    Integer posts_to_send_1 = (int) (numRuns * 0.2 * (skier_num / launch));
-    Integer posts_to_send_2 = (int) (numRuns * 0.6 * (skier_num / launch));
-    Integer posts_to_send_3 = (int) (numRuns * 0.1);
+    Integer posts_to_send_1 = (int) (numRuns * 0.2 * (skier_num / launch1));
+    Integer posts_to_send_2 = (int) (numRuns * 0.6 * (skier_num / launch2));
+    Integer posts_to_send_3 = (int) (numRuns * 0.1 * (skier_num / launch3));
+    CountDownLatch countDownLatch1 = new CountDownLatch(launch1);
+    CountDownLatch countDownLatch2 = new CountDownLatch(launch2);
+    CountDownLatch countDownLatch3 = new CountDownLatch(launch3);
 	  	
 		try (PrintWriter writer = new PrintWriter("massiveUpload.csv")) {
 			
@@ -66,84 +72,64 @@ public class Main {
     sb.append("duration");
     sb.append('\n');
     
-    for (int i = 0; i < launch; i++) {
-        if (i > 0) {
-            Integer start_time = 1;
-            Integer end_time = 90;
-            Integer skier_range_min = (numThreads * i) + 1;
-            Integer skier_range_max = numThreads * (1 + i);
-            run(launch, posts_to_send_1*launch, "Post Latency Analysis", "Phase 1", 
-            		skier_range_min, skier_range_max, start_time, end_time, lifts);
-        }
-        else {
-          Integer start_time = 1;
-          Integer end_time = 90;
-          Integer starting_skier_min = 1;
-          Integer starting_skier_max = numThreads;
-          run(launch, posts_to_send_1*launch, "Post Latency Analysis", "Phase 1", 
-          		starting_skier_min, starting_skier_max, start_time, end_time, lifts);
-        }
-        if (i >= 0.20 * launch) {
-          for (int j = 0; j < numThreads; j++) {
-            if (j > 0) {
-                Integer start_time = 91;
-                Integer end_time = 360;
-                Integer skier_range_min = (numSkiers/numThreads * i) + 1;
-                Integer skier_range_max = numSkiers/numThreads * (1 + i);
-                run(launch, posts_to_send_2*launch, "Post Latency Analysis", "Phase 2", 
-                		skier_range_min, skier_range_max, start_time, end_time, lifts);
-            }
-            else {
-              Integer start_time = 91;
-              Integer end_time = 360;
-              Integer starting_skier_min = 1;
-              Integer starting_skier_max = numSkiers/numThreads;
-              run(launch, posts_to_send_2*launch, "Post Latency Analysis", "Phase 2", 
-              		starting_skier_min, starting_skier_max, start_time, end_time, lifts);
-            }
-            if (j >= 0.20 * numThreads) {
-              for (int k = 0; k < 0.10 * numThreads; k++) {
-                if (k > 0) {
-                    Integer start_time = 361;
-                    Integer end_time = 420;
-                    Integer skier_range_min = (numThreads * i) + 1;
-                    Integer skier_range_max = numThreads * (1 + i);
-                    run(launch, posts_to_send_3*launch, "Post Latency Analysis", "Phase 3", 
-                    		skier_range_min, skier_range_max, start_time, end_time, lifts);
-                }
-                else {
-                	Integer start_time = 361;
-                  Integer end_time = 420;
-                  Integer starting_skier_min = 1;
-                  Integer starting_skier_max = numThreads;
-                  run(launch, posts_to_send_3*launch, "Post Latency Analysis", "Phase 3", 
-                  		starting_skier_min, starting_skier_max, start_time, end_time, lifts);
-                }
-              }       
-            }
-          }
-        }
-			}
-    	writer.write(sb.toString());
+    // We start launching the first phase
+    Integer start_time = 1;
+    Integer end_time = 90;
+    Integer skier_range_min = 0;
+    Integer skier_range_max = skier_num;
+    run(launch1, posts_to_send_1, "Post Latency Analysis", "Phase 1", 
+    		skier_range_min, skier_range_max, start_time, end_time, lifts, countDownLatch1);
+    
+    // Wait until 20% of this phase is complete
+    
+    while(countDownLatch1.getCount()/launch1 > 0.8) {
+    	TimeUnit.MILLISECONDS.sleep(10);
+    }
+    
+    // Start second phase
+    
+    start_time = 91;
+    end_time = 360;
+    run(launch2, posts_to_send_2, "Post Latency Analysis", "Phase 2", 
+    		skier_range_min, skier_range_max, start_time, end_time, lifts, countDownLatch2);
+    
+    // Wait until 20% of this phase is complete
+    
+    while(countDownLatch2.getCount()/launch2 > 0.8) {
+    	TimeUnit.MILLISECONDS.sleep(10);
+    }
+    
+    // Start third phase
+    
+    start_time = 361;
+    end_time = 420;
+    run(launch3, posts_to_send_3, "Post Latency Analysis", "Phase 3", 
+    		skier_range_min, skier_range_max, start_time, end_time, lifts, countDownLatch3);
+    
+    writer.write(sb.toString());
+    writer.close();
+    
 		}
 		catch (FileNotFoundException e) {
 		      System.out.println(e.getMessage());
 		}
+		catch (InterruptedException e) {
+      System.out.println(e.getMessage());
+		}
 	}
 	
-	public static void run(int threads, int requests, String taskName, String phase,
-			int skierMin, int skierMax, int timeMin, int timeMax, int lifts) {
+	public static void run(int threads, int runs, String taskName, String phase,
+			int skierMin, int skierMax, int timeMin, int timeMax, int lifts,
+			CountDownLatch countDownLatch) {
 		
 		Timestamp start = new Timestamp(System.currentTimeMillis());
-		int threadsPerRequest = requests/threads;
-    CountDownLatch countDownLatch = new CountDownLatch(threads);
     List<SkierClient> clients = new ArrayList<SkierClient>();
   	List<Long> durations =  new ArrayList<Long>();
   	List<Timestamp> starts = new ArrayList<Timestamp>();
   	List<Timestamp> ends = new ArrayList<Timestamp>();
 		
 		for (int i=0; i<threads; i++) {
-			SkierClient client = new SkierClient(threadsPerRequest, countDownLatch, skierMin,
+			SkierClient client = new SkierClient(runs, countDownLatch, skierMin,
 					skierMax, timeMin, timeMax, lifts);
 			clients.add(client);
 			Thread thread = new Thread(client);
@@ -170,7 +156,7 @@ public class Main {
 		    sb.append(",");
 		    sb.append(phase);
 		    sb.append(',');
-		    sb.append(threadsPerRequest);
+		    sb.append(runs);
 		    sb.append(',');
 		    sb.append(c.toString());
 		    sb.append(',');
@@ -191,7 +177,7 @@ public class Main {
 		
 		System.out.println("Task: " + taskName);
 		System.out.println("Phase): " + phase);
-		System.out.println("Total requests: " + requests);
+		System.out.println("Total requests: " + threads*runs);
 		System.out.println("Total threads: " + threads);
 		System.out.println("Wall Time: " + wallTime);
 		calculateStatistics(durations, start, end);
@@ -201,6 +187,12 @@ public class Main {
 	
 	public static void calculateStatistics(List<Long> durations, Timestamp start, Timestamp finish) {
 		Collections.sort(durations);
+		
+		if (durations.isEmpty()) {
+			System.out.println("Latency statistics:");
+			System.out.println("NO DATA");
+		}
+		
 		long min = durations.get(0);
 		long max = durations.get(durations.size() - 1);
 		Double averageDuration =  durations.stream().collect(Collectors.averagingDouble(d -> d));
