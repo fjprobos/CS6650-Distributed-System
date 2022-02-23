@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class SkierClient implements Runnable {
 	  
-	private static String url = "http://34.207.91.121:8080/lab2_TomcatServlets_war/skiers/12/seasons/1/days/12/skiers/3";
+	private static String url = "http://54.90.199.164:8080/lab2_TomcatServlets_war/skiers/12/seasons/1/days/12/skiers/3";
 	private int requestsNumber;
 	private List<Long> durations;
 	private List<Timestamp> starts;
@@ -112,7 +112,8 @@ public class SkierClient implements Runnable {
 		  try {
 				HttpResponse<String> response = client.send(request,
 				        HttpResponse.BodyHandlers.ofString());
-				System.err.println(response.body());
+				this.countDownLatch.countDown();
+				//System.err.println(response.body());
 				Timestamp end = new Timestamp(System.currentTimeMillis());
 			  this.ends.add(end);
 				long diff = end.getTime() - start.getTime();
@@ -121,14 +122,6 @@ public class SkierClient implements Runnable {
 				e.printStackTrace();
 			}
 		}
-		
-		// At the end of the thread we count down the latch
-	  // Release the connection.
-    if (this.countDownLatch != null) {
-    	//System.err.println("Counted Down");
-    	this.countDownLatch.countDown();
-    }
-		
   }
 	
 }

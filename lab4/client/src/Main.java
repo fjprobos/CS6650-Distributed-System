@@ -16,6 +16,7 @@ public class Main {
 	
 	public static void main(String[] args) {
 		
+
 		if (args.length < 5) {
       return;
 		}
@@ -73,38 +74,48 @@ public class Main {
     sb.append('\n');
     
     // We start launching the first phase
-    Integer start_time = 1;
-    Integer end_time = 90;
+    Integer start_time_1 = 1;
+    Integer end_time_1 = 90;
     Integer skier_range_min = 0;
     Integer skier_range_max = skier_num;
-    run(launch1, posts_to_send_1, "Post Latency Analysis", "Phase 1", 
-    		skier_range_min, skier_range_max, start_time, end_time, lifts, countDownLatch1);
+    new Thread(() -> run(launch1, posts_to_send_1, "Post Latency Analysis", "Phase 1", 
+    		skier_range_min, skier_range_max, start_time_1, end_time_1, lifts, countDownLatch1)).start();
+    
     
     // Wait until 20% of this phase is complete
     
-    while(countDownLatch1.getCount()/launch1 > 0.8) {
+    while(countDownLatch1.getCount()/(launch1*1.0) > 0.8) {
+    	System.out.println("Wait 1: "+ countDownLatch1.getCount()/(launch1*1.0));
     	TimeUnit.MILLISECONDS.sleep(10);
     }
     
     // Start second phase
     
-    start_time = 91;
-    end_time = 360;
-    run(launch2, posts_to_send_2, "Post Latency Analysis", "Phase 2", 
-    		skier_range_min, skier_range_max, start_time, end_time, lifts, countDownLatch2);
+    Integer start_time_2 = 91;
+    Integer end_time_2 = 360;
+    new Thread(() -> run(launch2, posts_to_send_2, "Post Latency Analysis", "Phase 2", 
+    		skier_range_min, skier_range_max, start_time_2, end_time_2, lifts, countDownLatch2)).start();
     
     // Wait until 20% of this phase is complete
     
-    while(countDownLatch2.getCount()/launch2 > 0.8) {
+    while(countDownLatch2.getCount()/(launch2*1.0) > 0.8) {
+    	System.out.println("Wait 2: "+ countDownLatch2.getCount()/(launch2*1.0));
     	TimeUnit.MILLISECONDS.sleep(10);
     }
     
     // Start third phase
     
-    start_time = 361;
-    end_time = 420;
-    run(launch3, posts_to_send_3, "Post Latency Analysis", "Phase 3", 
-    		skier_range_min, skier_range_max, start_time, end_time, lifts, countDownLatch3);
+    Integer start_time_3 = 361;
+    Integer end_time_3 = 420;
+    new Thread(() -> run(launch3, posts_to_send_3, "Post Latency Analysis", "Phase 3", 
+    		skier_range_min, skier_range_max, start_time_3, end_time_3, lifts, countDownLatch3)).start();
+    
+    while((countDownLatch1.getCount() > 0 || countDownLatch2.getCount() > 0) || countDownLatch3.getCount() > 0) {
+    	System.out.println("CL 1: "+ countDownLatch1.getCount());
+    	System.out.println("CL 2: "+ countDownLatch2.getCount());
+    	System.out.println("CL 3: "+ countDownLatch3.getCount());
+    	TimeUnit.MILLISECONDS.sleep(10);
+    }
     
     writer.write(sb.toString());
     writer.close();
@@ -136,7 +147,7 @@ public class Main {
 	    thread.start();
 		}
 		
-		// Wait for the thread pool to finish
+		// Wait for the thread pool to finish before adding results
 		try {
 			countDownLatch.await();
 			// Fetch the monitoring data collected
