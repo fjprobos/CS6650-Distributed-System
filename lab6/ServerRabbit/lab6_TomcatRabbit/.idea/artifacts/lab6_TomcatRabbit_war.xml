@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="lab6_TomcatRabbit:war">
+    <output-path>$PROJECT_DIR$/out/artifacts/lab6_TomcatRabbit_war</output-path>
+    <root id="archive" name="lab6_TomcatRabbit_war.war">
+      <element id="artifact" artifact-name="lab6_TomcatRabbit:war exploded" />
+    </root>
+  </artifact>
+</component>

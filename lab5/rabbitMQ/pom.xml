@@ -1,0 +1,23 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>fjprobos.kab5</groupId>
+  <artifactId>lab5</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>lab5</name>
+  <description>distributed systems lab 5</description>
+  <dependencies>
+  	<!-- https://mvnrepository.com/artifact/com.rabbitmq/amqp-client -->
+	<dependency>
+	    <groupId>com.rabbitmq</groupId>
+	    <artifactId>amqp-client</artifactId>
+	    <version>5.14.2</version>
+	</dependency>
+	<!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl -->
+	<dependency>
+	    <groupId>org.apache.logging.log4j</groupId>
+	    <artifactId>log4j-slf4j-impl</artifactId>
+	    <version>2.1</version>
+	    <scope>test</scope>
+	</dependency>
+  </dependencies>
+</project>
